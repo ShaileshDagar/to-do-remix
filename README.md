@@ -36,3 +36,7 @@ Make sure to deploy the output of `remix build`
 
 - `build/`
 - `public/build/`
+
+### TO-DO
+
+- Wrap "/list" path in a auth path that will only call the loaders of "/list" if the user is authenticated. So, new path should be "_auth/list" and _auth.tsx file.
