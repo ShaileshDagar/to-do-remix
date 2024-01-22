@@ -18,7 +18,7 @@ export async function loader() {
   }
 
 export default function Signup() {
-    //redirect to "/" if logged in
+    //redirect to "/list" if logged in
     const navigate = useNavigate()
     const isUserValid = useLoaderData<typeof loader>()
     useEffect(() => {

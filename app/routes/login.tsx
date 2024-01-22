@@ -1,5 +1,5 @@
 import { ActionFunctionArgs } from "@remix-run/node";
-import { Form, redirect, useLoaderData, useNavigate } from "@remix-run/react";
+import { Form, redirect, useLoaderData, useNavigate, useSearchParams } from "@remix-run/react";
 import { useEffect } from "react";
 import { client, login } from "~/pocketbase";
 
@@ -19,13 +19,16 @@ export default function Login() {
     //redirect to "/list" if logged in
     const navigate = useNavigate()
     const isUserValid = useLoaderData<typeof loader>()
+    const searchParams = useSearchParams()
     useEffect(() => {
         if(isUserValid)
-        return navigate("/list")
+            return navigate("/list")
     }, [isUserValid])
     return <>
+        {searchParams && <p>{searchParams[0].get("message")}</p>}
         <Form method="post">
-            <input 
+            <input
+                autoComplete="email"
                 type="email"
                 placeholder="abc@abc.com"
                 name="email"/>

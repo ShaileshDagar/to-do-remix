@@ -44,3 +44,19 @@ export async function signup(username, email, password, passwordConfirm) {
     }
     await client.collection("users").create(data)
 }
+
+export async function getList() {
+    return await client.collection("tasks").getList(1, 50, {sort: 'created'})
+}
+
+export async function createTask(task, user) {
+    const data = {
+        "task": task,
+        "user": user
+    }
+    return await client.collection("tasks").create(data)
+}
+
+export async function deleteTask(taskId) {
+    return await client.collection("tasks").delete(taskId)
+}
