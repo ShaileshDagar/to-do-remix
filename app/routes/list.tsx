@@ -1,6 +1,6 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, defer } from "@remix-run/node"
-import { Await, Form, useLoaderData } from "@remix-run/react"
-import { Suspense } from "react"
+import { Await, Form, useLoaderData, useNavigation } from "@remix-run/react"
+import { Suspense, useEffect, useRef } from "react"
 import { redirect } from "react-router"
 import { client, createTask, deleteTask, getList } from "~/pocketbase"
 
@@ -30,6 +30,15 @@ export async function action({request}: ActionFunctionArgs) {
 
 export default function List() {
     const loaderDataPromise = useLoaderData<typeof loader>()
+    const navigation = useNavigation()
+    const isAdding = navigation.state === "submitting" && navigation.formData?.get("_action") === "create"
+    const formRef = useRef<HTMLFormElement>()
+
+    useEffect(() => {
+        if(!isAdding) {
+            formRef.current?.reset()
+        }
+    }, [isAdding])
     
     function renderList(loadedList: { items: any[] }) {
         const listEls = loadedList.items.map((item) => {
@@ -53,7 +62,7 @@ export default function List() {
                 </Await>
             </Suspense>
             <li>
-                <Form method="POST">
+                <Form ref={formRef} method="POST">
                     <input 
                         type="text"
                         name="task"
