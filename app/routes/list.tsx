@@ -1,7 +1,8 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, defer } from "@remix-run/node"
-import { Await, Form, useLoaderData, useNavigation } from "@remix-run/react"
+import { Await, Form, useFetcher, useLoaderData, useNavigation } from "@remix-run/react"
 import { Suspense, useEffect, useRef } from "react"
 import { redirect } from "react-router"
+import { Item, ListViewResponse } from "~/interface"
 import { client, createTask, deleteTask, getList } from "~/pocketbase"
 
 export async function loader({request}: LoaderFunctionArgs) {
@@ -10,7 +11,7 @@ export async function loader({request}: LoaderFunctionArgs) {
         const message = "You must login first!"
         throw redirect(`/login?message=${message}`)
     }
-    return defer({list: getList()})
+    return defer({response: getList()})
     
 }
 
@@ -35,20 +36,13 @@ export default function List() {
     const formRef = useRef<HTMLFormElement>()
 
     useEffect(() => {
-        if(!isAdding) {
+        if(isAdding)
             formRef.current?.reset()
-        }
     }, [isAdding])
-    
-    function renderList(loadedList: { items: any[] }) {
+
+    function renderList(loadedList: ListViewResponse) {
         const listEls = loadedList.items.map((item) => {
-            return (
-                <li key={item.id}>{item.task}{" "}
-                    <Form method="DELETE" style={{display: "inline"}}>
-                        <input type="hidden" name="id" value={item.id}/>
-                        <button type="submit" aria-label="delete" name="_action" value="delete">Delete</button>
-                    </Form>
-                </li>)
+            return <ListItem item={item} key={item.id} />
         })
         return listEls
     }
@@ -57,10 +51,11 @@ export default function List() {
         <h2>Pending Tasks:</h2>
         <ul>
             <Suspense fallback={<h1>Loading List...</h1>}>
-                <Await resolve={loaderDataPromise.list}>
+                <Await resolve={loaderDataPromise.response}>
                     {renderList}
                 </Await>
             </Suspense>
+            {isAdding && <li>{navigation.formData?.get("task")}</li>}
             <li>
                 <Form ref={formRef} method="POST">
                     <input 
@@ -68,9 +63,22 @@ export default function List() {
                         name="task"
                         placeholder="Add Task"
                     />
-                    <button type="submit" name="_action" value="create">Add Task</button>
+                    <button disabled={isAdding} type="submit" name="_action" value="create">Add Task</button>
                 </Form>
             </li>
         </ul>
     </div>
+}
+
+function ListItem({item}) {
+    const fetcher = useFetcher()
+    const isDeleting = fetcher.formData?.get("id") === item.id
+    return (
+        <li hidden={isDeleting} key={item.id}>
+            {item.task}{" "}
+            <fetcher.Form method="DELETE" style={{display: "inline"}}>
+                <input type="hidden" name="id" value={item.id}/>
+                <button type="submit" aria-label="delete" name="_action" value="delete">Delete</button>
+            </fetcher.Form>
+        </li>)
 }

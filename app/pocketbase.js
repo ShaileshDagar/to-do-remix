@@ -50,6 +50,7 @@ export async function getList() {
 }
 
 export async function createTask(task, user) {
+    await new Promise((resolve) => setTimeout(resolve, 3000))
     const data = {
         "task": task,
         "user": user
@@ -58,5 +59,6 @@ export async function createTask(task, user) {
 }
 
 export async function deleteTask(taskId) {
+    await new Promise((resolve) => setTimeout(resolve, 3000))
     return await client.collection("tasks").delete(taskId)
 }
