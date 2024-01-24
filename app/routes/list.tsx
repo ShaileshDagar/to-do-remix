@@ -1,8 +1,8 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, defer } from "@remix-run/node"
-import { Await, Form, useActionData, useFetcher, useLoaderData, useNavigation } from "@remix-run/react"
-import { Suspense, useEffect, useRef } from "react"
+import { Await, Form, useFetcher, useLoaderData, useNavigation } from "@remix-run/react"
+import { Suspense, useEffect, useRef, useState } from "react"
 import { redirect } from "react-router"
-import { Item, ListViewResponse } from "~/interface"
+import { ListViewResponse } from "~/interface"
 import { client, createTask, deleteTask, getList, patchTask } from "~/pocketbase"
 
 export function loader({request}: LoaderFunctionArgs) {
@@ -40,10 +40,13 @@ export default function List() {
     const navigation = useNavigation()
     const isAdding = navigation.state === "submitting" && navigation.formData?.get("_action") === "create"
     const formRef = useRef<HTMLFormElement>()
+    const taskRef = useRef<HTMLInputElement>()
 
     useEffect(() => {
-        if(isAdding)
+        if(isAdding){
             formRef.current?.reset()
+            taskRef.current?.focus()
+        }
     }, [isAdding])
 
     function renderList(loadedList: ListViewResponse) {
@@ -68,6 +71,7 @@ export default function List() {
                         type="text"
                         name="task"
                         placeholder="Add Task"
+                        ref={taskRef}
                     />
                     <button disabled={isAdding} type="submit" name="_action" value="create">Add Task</button>
                 </Form>
@@ -80,21 +84,29 @@ function ListItem({item}) {
     const fetcher = useFetcher()
     const isDeleting = fetcher.formData?.get("id") === item.id && fetcher.formData?.get("_action") === "delete"
     const isPatching = fetcher.formData?.get("id") === item.id && fetcher.formData?.get("_action") === "patch"
-    let isEditing = (fetcher.formData?.get("id") === item.id && useActionData<typeof action>() ) ?? false
+    let isEditing = fetcher.formData?.get("id") === item.id && fetcher.formData?.get("_action") === "edit"
+    let [editing, setEditing] = useState(false)
+    const editRef = useRef<HTMLInputElement>()
+    useEffect(() => {
+        if(isEditing){
+            editRef.current?.focus()
+            setEditing(true)
+        }
+        else if(isPatching)
+            setEditing(false)
+    }, [isEditing, isPatching])
     return (
         <li 
             hidden={isDeleting} 
             key={item.id}
             style={{opacity: isPatching ? 0.25 : 1}}>
-            {!isEditing && item.task}{" "}
+            {!editing && item.task}{" "}
             <fetcher.Form method="POST" style={{display: "inline"}}>
                 <input type="hidden" name="id" value={item.id}/>
-                <input type={isEditing ? "text": "hidden"} name="new-task" defaultValue={item.task} />
-                {isEditing && <button type="submit" aria-label="submit" name="_action" value="patch">Submit</button>}
-                {!isEditing && <button type="submit" aria-label="edit" name="_action" value="edit">Edit</button>}
+                <input type={editing ? "text": "hidden"} ref={editRef} name="new-task" defaultValue={item.task} />
+                {editing && <button type="submit" aria-label="submit" name="_action" value="patch">Submit</button>}
+                {!editing && <button type="submit" aria-label="edit" name="_action" value="edit">Edit</button>}
                 <button type="submit" aria-label="delete" name="_action" value="delete">Delete</button>
             </fetcher.Form>
         </li>)
 }
-
-// I need a pair of a boolean 'isEditing' and an id variable to identify which item is being edited
