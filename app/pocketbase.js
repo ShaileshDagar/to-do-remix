@@ -62,3 +62,12 @@ export async function deleteTask(taskId) {
     await new Promise((resolve) => setTimeout(resolve, 3000))
     return await client.collection("tasks").delete(taskId)
 }
+
+export async function patchTask(taskId, task) {
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+    const data = {
+        "task": task,
+        "user": client.authStore.model?.id
+    }
+    return await client.collection("tasks").update(taskId, data)
+}

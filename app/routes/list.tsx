@@ -1,18 +1,17 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, defer } from "@remix-run/node"
-import { Await, Form, useFetcher, useLoaderData, useNavigation } from "@remix-run/react"
+import { Await, Form, useActionData, useFetcher, useLoaderData, useNavigation } from "@remix-run/react"
 import { Suspense, useEffect, useRef } from "react"
 import { redirect } from "react-router"
 import { Item, ListViewResponse } from "~/interface"
-import { client, createTask, deleteTask, getList } from "~/pocketbase"
+import { client, createTask, deleteTask, getList, patchTask } from "~/pocketbase"
 
-export async function loader({request}: LoaderFunctionArgs) {
+export function loader({request}: LoaderFunctionArgs) {
     const isUserValid = client.authStore.isValid
     if(!isUserValid){
         const message = "You must login first!"
         throw redirect(`/login?message=${message}`)
     }
     return defer({response: getList()})
-    
 }
 
 export async function action({request}: ActionFunctionArgs) {
@@ -22,11 +21,18 @@ export async function action({request}: ActionFunctionArgs) {
         const task = formData.get("task")
         await createTask(task, client.authStore.model?.id)
     }
-    if(_action === "delete"){
+    else if(_action === "delete"){
         const taskId = formData.get("id")
         await deleteTask(taskId)
     }
-    return null
+    else if(_action === "patch"){
+        const taskId = formData.get("id")
+        const task = formData.get("new-task")
+        await patchTask(taskId, task)
+    }
+    else if(_action === "edit")
+        return true
+    return false
 }
 
 export default function List() {
@@ -72,13 +78,23 @@ export default function List() {
 
 function ListItem({item}) {
     const fetcher = useFetcher()
-    const isDeleting = fetcher.formData?.get("id") === item.id
+    const isDeleting = fetcher.formData?.get("id") === item.id && fetcher.formData?.get("_action") === "delete"
+    const isPatching = fetcher.formData?.get("id") === item.id && fetcher.formData?.get("_action") === "patch"
+    let isEditing = (fetcher.formData?.get("id") === item.id && useActionData<typeof action>() ) ?? false
     return (
-        <li hidden={isDeleting} key={item.id}>
-            {item.task}{" "}
-            <fetcher.Form method="DELETE" style={{display: "inline"}}>
+        <li 
+            hidden={isDeleting} 
+            key={item.id}
+            style={{opacity: isPatching ? 0.25 : 1}}>
+            {!isEditing && item.task}{" "}
+            <fetcher.Form method="POST" style={{display: "inline"}}>
                 <input type="hidden" name="id" value={item.id}/>
+                <input type={isEditing ? "text": "hidden"} name="new-task" defaultValue={item.task} />
+                {isEditing && <button type="submit" aria-label="submit" name="_action" value="patch">Submit</button>}
+                {!isEditing && <button type="submit" aria-label="edit" name="_action" value="edit">Edit</button>}
                 <button type="submit" aria-label="delete" name="_action" value="delete">Delete</button>
             </fetcher.Form>
         </li>)
 }
+
+// I need a pair of a boolean 'isEditing' and an id variable to identify which item is being edited
