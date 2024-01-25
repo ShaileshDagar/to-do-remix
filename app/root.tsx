@@ -15,6 +15,8 @@ import {
 
 import { client, logout } from './pocketbase.js'
 
+import "./styles/header.css"
+
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
@@ -52,12 +54,18 @@ export default function App() {
 function Header() {
   const isUserValid = useLoaderData<typeof loader>()
   return (
-    <div>
-      <NavLink to="/">Home</NavLink>
-      {!isUserValid && <NavLink to="login">Login</NavLink>}       {/*Conditionally render when not logged in*/}
-      {!isUserValid &&<NavLink to="signup">Sign Up</NavLink>}    {/*Conditionally render when not logged in*/}
-      {isUserValid && <NavLink to="list">List</NavLink>}         {/*Conditionally render when logged in*/}
-      {isUserValid && <Form method="post"><button type="submit">Logout</button></Form>}     {/*Conditionally render when logged in*/}
+    <div className="header">
+      <div className="header-left">
+        <NavLink to="/">Home</NavLink>
+        {isUserValid && <NavLink to="list">List</NavLink>}         {/*Conditionally render when logged in*/}
+      </div>
+      <div className="header-left">
+        <div className="header-buttons">
+          {!isUserValid && <NavLink to="login">Login</NavLink>}       {/*Conditionally render when not logged in*/}
+          {!isUserValid &&<NavLink to="signup">Sign Up</NavLink>}    {/*Conditionally render when not logged in*/}
+          {isUserValid && <Form method="post"><button type="submit">Logout</button></Form>}     {/*Conditionally render when logged in*/}
+        </div>
+      </div>
     </div>
   )
 }

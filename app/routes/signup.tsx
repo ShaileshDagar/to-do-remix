@@ -1,6 +1,7 @@
 import { ActionFunctionArgs, MetaFunction, redirect } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import { client, signup } from "~/pocketbase";
+import "../styles/auth-form.css"
 
 export const meta: MetaFunction = () => {
     return [
@@ -25,17 +26,18 @@ export async function loader() {
 }
 
 export default function Signup() {
-    return <>
-        <Form method="post">
+    return <div className="signup-box">
+        <h1>Sign Up</h1>
+        <Form method="post" className="signup-form">
             <input 
                 type="email"
-                placeholder="abc@abc.com"
+                placeholder="Email"
                 name="email"/>
             <input
                 type="password"
-                placeholder="********"
+                placeholder="Password"
                 name="password"/>
             <button type="submit">Sign Up</button>
         </Form>
-    </>
+    </div>
 }

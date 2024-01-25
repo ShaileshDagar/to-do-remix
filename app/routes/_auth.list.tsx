@@ -3,6 +3,7 @@ import { Await, Form, useFetcher, useLoaderData, useNavigation } from "@remix-ru
 import { Suspense, useEffect, useRef, useState } from "react"
 import { ListViewResponse } from "~/interface"
 import { client, createTask, deleteTask, getList, patchTask } from "~/pocketbase"
+import "../styles/list.css"
 
 export const meta: MetaFunction = () => {
     return [
@@ -55,17 +56,17 @@ export default function List() {
         return listEls
     }
     
-    return <div>
+    return <div className="container">
         <h2>Pending Tasks:</h2>
-        <ul>
+        <ul className="todo-list">
             <Suspense fallback={<h1>Loading List...</h1>}>
                 <Await resolve={loaderDataPromise.response}>
                     {renderList}
                 </Await>
             </Suspense>
-            {isAdding && <li>{navigation.formData?.get("task")}</li>}
+            {isAdding && <li className="todo-item">{navigation.formData?.get("task")}</li>}
             <li>
-                <Form ref={formRef} method="POST">
+                <Form ref={formRef} method="POST" className="add-task">
                     <input 
                         type="text"
                         name="task"
@@ -98,7 +99,8 @@ function ListItem({item}) {
         <li 
             hidden={isDeleting} 
             key={item.id}
-            style={{opacity: isPatching ? 0.25 : 1}}>
+            // style={{opacity: isPatching ? 0.25 : 1}}
+            className="todo-item">
             {!editing && item.task}{" "}
             <fetcher.Form method="POST" style={{display: "inline"}}>
                 <input type="hidden" name="id" value={item.id}/>

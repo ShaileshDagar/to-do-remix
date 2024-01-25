@@ -1,6 +1,7 @@
 import { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
 import { Form, redirect, useSearchParams } from "@remix-run/react";
 import { client, login, oAuthLogin } from "~/pocketbase";
+import "../styles/auth-form.css"
 
 export const meta: MetaFunction = () => {
     return [
@@ -31,20 +32,21 @@ export function loader() {
 
 export default function Login() {
     const searchParams = useSearchParams()
-    return <>
+    return <div className="signup-box">
+        <h1>Sign In</h1>
         {searchParams && <p>{searchParams[0].get("message")}</p>}
-        <Form method="post">
+        <Form method="post" className="signup-form">
             <input
                 autoComplete="email"
                 type="email"
-                placeholder="abc@abc.com"
+                placeholder="Email"
                 name="email"/>
             <input
                 type="password"
-                placeholder="********"
+                placeholder="Password"
                 name="password"/>
             <button type="submit" name="_action" value="normal">Sign in</button>
             <button type="submit" name="_action" value="oauth">Sign in with Google</button>
         </Form>
-    </>
+    </div>
 }
