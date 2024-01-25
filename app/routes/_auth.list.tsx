@@ -1,9 +1,15 @@
-import { ActionFunctionArgs, defer } from "@remix-run/node"
+import { ActionFunctionArgs, MetaFunction, defer } from "@remix-run/node"
 import { Await, Form, useFetcher, useLoaderData, useNavigation } from "@remix-run/react"
 import { Suspense, useEffect, useRef, useState } from "react"
-import { redirect } from "react-router"
 import { ListViewResponse } from "~/interface"
 import { client, createTask, deleteTask, getList, patchTask } from "~/pocketbase"
+
+export const meta: MetaFunction = () => {
+    return [
+      { title: "To-Do List" },
+      { name: "description", content: "LIst of Pending Tasks" },
+    ];
+};
 
 export function loader() {
     return defer({response: getList()})

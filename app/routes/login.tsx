@@ -1,7 +1,14 @@
-import { ActionFunctionArgs } from "@remix-run/node";
+import { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
 import { Form, redirect, useSearchParams } from "@remix-run/react";
 import { client, login, oAuthLogin } from "~/pocketbase";
 
+export const meta: MetaFunction = () => {
+    return [
+      { title: "Sign In" },
+      { name: "description", content: "Sign in as Existing User" },
+    ];
+};
+  
 export async function action({request}: ActionFunctionArgs) {
     const formData = await request.formData()
     const _action = formData.get("_action")
