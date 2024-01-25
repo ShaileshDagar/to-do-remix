@@ -17,6 +17,10 @@ export async function login(username, password) {
 
 }
 
+export async function oAuthLogin() {
+    const authData = await client.collection("users").authWithOAuth2({provider: "google"})
+}
+
 export function logout() {
     client.authStore.clear()
 }
@@ -71,3 +75,4 @@ export async function patchTask(taskId, task) {
     }
     return await client.collection("tasks").update(taskId, data)
 }
+

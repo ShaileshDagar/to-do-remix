@@ -1,16 +1,11 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, defer } from "@remix-run/node"
+import { ActionFunctionArgs, defer } from "@remix-run/node"
 import { Await, Form, useFetcher, useLoaderData, useNavigation } from "@remix-run/react"
 import { Suspense, useEffect, useRef, useState } from "react"
 import { redirect } from "react-router"
 import { ListViewResponse } from "~/interface"
 import { client, createTask, deleteTask, getList, patchTask } from "~/pocketbase"
 
-export function loader({request}: LoaderFunctionArgs) {
-    const isUserValid = client.authStore.isValid
-    if(!isUserValid){
-        const message = "You must login first!"
-        throw redirect(`/login?message=${message}`)
-    }
+export function loader() {
     return defer({response: getList()})
 }
 
@@ -30,9 +25,7 @@ export async function action({request}: ActionFunctionArgs) {
         const task = formData.get("new-task")
         await patchTask(taskId, task)
     }
-    else if(_action === "edit")
-        return true
-    return false
+    return null
 }
 
 export default function List() {
@@ -89,8 +82,8 @@ function ListItem({item}) {
     const editRef = useRef<HTMLInputElement>()
     useEffect(() => {
         if(isEditing){
-            editRef.current?.focus()
             setEditing(true)
+            editRef.current?.focus()
         }
         else if(isPatching)
             setEditing(false)

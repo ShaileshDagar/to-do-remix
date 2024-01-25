@@ -1,6 +1,5 @@
 import { ActionFunctionArgs, redirect } from "@remix-run/node";
-import { Form, useLoaderData, useNavigate } from "@remix-run/react";
-import { useEffect } from "react";
+import { Form } from "@remix-run/react";
 import { client, signup } from "~/pocketbase";
 
 export async function action({request}: ActionFunctionArgs) {
@@ -14,17 +13,13 @@ export async function action({request}: ActionFunctionArgs) {
 }
 
 export async function loader() {
-    return client.authStore.isValid
-  }
+    const isUserValid = client.authStore.isValid
+    if(isUserValid)
+        throw redirect("/list")
+    return null
+}
 
 export default function Signup() {
-    //redirect to "/list" if logged in
-    const navigate = useNavigate()
-    const isUserValid = useLoaderData<typeof loader>()
-    useEffect(() => {
-        if(isUserValid)
-        return navigate("/list")
-    }, [isUserValid])
     return <>
         <Form method="post">
             <input 
